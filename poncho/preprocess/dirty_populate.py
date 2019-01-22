@@ -174,7 +174,7 @@ def acceptable(txt):
         True if the string is acceptable.
         False if the string is not acceptable.
     '''
-    if len(txt.split(' ')) > 50 or len(txt) < 1 or len(txt) > 10000:
+    if len(txt.split(' ')) > 50 or len(txt) < 1 or len(txt) > 1000:
         return False
     elif txt == '[removed]' or txt == '[deleted]':
         return False
@@ -185,82 +185,88 @@ def acceptable(txt):
 if __name__ == '__main__':
     row_counter = 0
 
-    for timeframe in TIMEFRAMES:
-        # Database connection.
-        conn = sqlite3.connect('../data/processed/RC_dirty_{}.db'.format(timeframe.split('-')[0]))
-        cur = conn.cursor()
+    try:
+        for timeframe in TIMEFRAMES:
+            # Database connection.
+            conn = sqlite3.connect('../data/processed/RC_dirty_{}.db'.format(timeframe.split('-')[0]))
+            cur = conn.cursor()
 
-        cur = create_tables(cur)
+            cur = create_tables(cur)
 
-        # Open the reddit comments file.
-        with open('../data/raw/RC_{}'.format(timeframe), buffering=10000000) as data:
-            # Log events.
-            with open('../data/logs/dirty_{}.txt'.format(str(time.time()).split('.')[0]), mode='a') as log:
-                print('Beginning to write comments to the database. Time: {}'.format(str(datetime.now())))
-                log.write('Beginning to write comments to the database. Time: {}\n'.format(str(datetime.now())))
-                # Insert all comments to the database.
-                for row in data:
-                    row_counter += 1
+            # Open the reddit comments file.
+            with open('../data/raw/RC_{}'.format(timeframe), buffering=10000000) as data:
+                # Log events.
+                with open('../data/logs/dirty_{}.txt'.format(str(time.time()).split('.')[0]), mode='a') as log:
+                    print('Beginning to write comments to the database. Time: {}'.format(str(datetime.now())))
+                    log.write('Beginning to write comments to the database. Time: {}\n'.format(str(datetime.now())))
+                    # Insert all comments to the database.
+                    for row in data:
+                        row_counter += 1
 
-                    # Load the data row as JSON.
-                    row = json.loads(row)
+                        # Load the data row as JSON.
+                        row = json.loads(row)
 
-                    # Required data.
-                    parent_id = row['parent_id']
-                    comment = reformat(row['body'])
-                    created_unix = row['created_utc']
-                    score = row['score']
-                    comment_id = row['id']
-                    subreddit = row['subreddit']
+                        # Required data.
+                        parent_id = row['parent_id']
+                        comment = reformat(row['body'])
+                        created_unix = row['created_utc']
+                        score = row['score']
+                        comment_id = row['id']
+                        subreddit = row['subreddit']
 
-                    if parent_id.split('_')[0] == 't3':
-                        if acceptable(comment):
-                            con, cur = insert_to_table(
-                                conn,
-                                cur,
-                                comment=comment,
-                                created_unix=created_unix,
-                                comment_id=comment_id,
-                                subreddit=subreddit,
-                                score=score
-                            )
+                        if parent_id.split('_')[0] == 't3':
+                            if acceptable(comment):
+                                con, cur = insert_to_table(
+                                    conn,
+                                    cur,
+                                    comment=comment,
+                                    created_unix=created_unix,
+                                    comment_id=comment_id,
+                                    subreddit=subreddit,
+                                    score=score
+                                )
 
-                    if row_counter % 10000 == 0:
-                        print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
-                        log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
+                        if row_counter % 10000 == 0:
+                            print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
+                            log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
 
-                row_counter = 0
-                print('Beginning to write replies to the database. Time: {}'.format(str(datetime.now())))
-                log.write('Beginning to write replies to the database. Time: {}\n'.format(str(datetime.now())))
-                # Insert all replies to the comments.
-                for row in data:
-                    row_counter += 1
+                    row_counter = 0
+                    print('Beginning to write replies to the database. Time: {}'.format(str(datetime.now())))
+                    log.write('Beginning to write replies to the database. Time: {}\n'.format(str(datetime.now())))
+                    # Insert all replies to the comments.
+                    for row in data:
+                        row_counter += 1
 
-                    # Load the data row as JSON.
-                    row = json.loads(row)
+                        # Load the data row as JSON.
+                        row = json.loads(row)
 
-                    # Required data.
-                    parent_id = row['parent_id']
-                    comment = reformat(row['body'])
-                    created_unix = row['created_utc']
-                    score = row['score']
-                    comment_id = row['id']
-                    subreddit = row['subreddit']
+                        # Required data.
+                        parent_id = row['parent_id']
+                        comment = reformat(row['body'])
+                        created_unix = row['created_utc']
+                        score = row['score']
+                        comment_id = row['id']
+                        subreddit = row['subreddit']
 
-                    if parent_id.split('_')[0] == 't1':
-                        if acceptable(comment):
-                            con, cur = insert_to_table(
-                                conn,
-                                cur,
-                                has_parent=True,
-                                parent_id=parent_id.split('_')[1],
-                                comment=comment,
-                                created_unix=created_unix,
-                                comment_id=comment_id,
-                                subreddit=subreddit,
-                                score=score
-                            )
+                        if parent_id.split('_')[0] == 't1':
+                            if acceptable(comment):
+                                con, cur = insert_to_table(
+                                    conn,
+                                    cur,
+                                    has_parent=True,
+                                    parent_id=parent_id.split('_')[1],
+                                    comment=comment,
+                                    created_unix=created_unix,
+                                    comment_id=comment_id,
+                                    subreddit=subreddit,
+                                    score=score
+                                )
 
-                    if row_counter % 10000 == 0:
-                        print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
-                        log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
+                        if row_counter % 10000 == 0:
+                            print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
+                            log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
+    except Exception as e:
+        raise e
+    finally:
+        cur.close()
+        conn.close()
