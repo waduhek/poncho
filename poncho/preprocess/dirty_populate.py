@@ -71,6 +71,9 @@ def transaction_builder(conn, cur, sql, args):
         cur -> Database cursor.
         sql -> SQL statement to be executed.
         args -> Values to be inserted for the corresponding query.
+    Returns:
+        Database connection.
+        Database cursor.
     '''
     global TRANSACTIONS
     global TRANSACTION_ARGS
@@ -82,14 +85,16 @@ def transaction_builder(conn, cur, sql, args):
     if len(TRANSACTIONS) > 1000:
         cur.execute('BEGIN TRANSACTION')
 
-        for i, trans in enumerate(TRANSACTIONS):
+        for trans, args in zip(TRANSACTIONS, TRANSACTION_ARGS):
             try:
-                cur.execute(trans, TRANSACTION_ARGS[i])
+                cur.execute(trans, args)
             except Exception as e:
                 pass
 
         conn.commit()
         TRANSACTIONS, TRANSACTION_ARGS = [], []
+
+    return conn, cur
 
 
 def insert_to_table(conn, cur, has_parent=False, **kwargs):
@@ -108,6 +113,9 @@ def insert_to_table(conn, cur, has_parent=False, **kwargs):
         comment -> Body of the comment.
     Raises:
         KeyError if any of the required arguments are not present.
+    Returns:
+        Database connection.
+        Database cursor.
     '''
     if 'comment_id' not in kwargs:
         raise KeyError('Missing Argument: comment_id')
@@ -137,7 +145,7 @@ def insert_to_table(conn, cur, has_parent=False, **kwargs):
                 kwargs['subreddit'],
             ]
 
-            transaction_builder(conn, cur, ins_parent, args)
+            conn, cur = transaction_builder(conn, cur, ins_parent, args)
     else:
         ins_no_parent = '''
         INSERT INTO rc_parent (comment_id, created_unix, score, comment, subreddit)
@@ -151,7 +159,9 @@ def insert_to_table(conn, cur, has_parent=False, **kwargs):
             kwargs['subreddit'],
         ]
 
-        transaction_builder(conn, cur, ins_no_parent, args)
+        conn, cur = transaction_builder(conn, cur, ins_no_parent, args)
+
+    return conn, cur
 
 
 def acceptable(txt):
@@ -205,7 +215,7 @@ if __name__ == '__main__':
 
                     if parent_id.split('_')[0] == 't3':
                         if acceptable(comment):
-                            insert_to_table(
+                            con, cur = insert_to_table(
                                 conn,
                                 cur,
                                 comment=comment,
@@ -215,7 +225,7 @@ if __name__ == '__main__':
                                 score=score
                             )
 
-                    if row_counter % 100000 == 0:
+                    if row_counter % 10000 == 0:
                         print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
                         log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
 
@@ -239,11 +249,11 @@ if __name__ == '__main__':
 
                     if parent_id.split('_')[0] == 't1':
                         if acceptable(comment):
-                            insert_to_table(
+                            con, cur = insert_to_table(
                                 conn,
                                 cur,
                                 has_parent=True,
-                                parent_id=parent_id,
+                                parent_id=parent_id.split('_')[1],
                                 comment=comment,
                                 created_unix=created_unix,
                                 comment_id=comment_id,
@@ -251,6 +261,6 @@ if __name__ == '__main__':
                                 score=score
                             )
 
-                    if row_counter % 100000 == 0:
+                    if row_counter % 10000 == 0:
                         print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
                         log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
