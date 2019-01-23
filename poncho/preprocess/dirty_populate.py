@@ -25,7 +25,7 @@ def create_tables(cur):
         Database cursor.
     '''
     parent = '''
-    CREATE TABLE IF NOT EXISTS rc_parent (
+    CREATE TABLE IF NOT EXISTS rc_comment (
         comment_id TEXT PRIMARY KEY,
         created_unix INT,
         score INT,
