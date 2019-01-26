@@ -77,23 +77,24 @@ def transaction_builder(conn, cur, sql, args):
     '''
     global TRANSACTIONS
     global TRANSACTION_ARGS
-
-    TRANSACTIONS.append(sql)
-    TRANSACTION_ARGS.append(args)
-
-    # Execute transaction once the number of queries reaches 1000
-    if len(TRANSACTIONS) > 1000:
-        cur.execute('BEGIN TRANSACTION')
-
-        for trans, args in zip(TRANSACTIONS, TRANSACTION_ARGS):
-            try:
-                cur.execute(trans, args)
-            except Exception as e:
-                pass
-
-        conn.commit()
-        TRANSACTIONS, TRANSACTION_ARGS = [], []
-
+    try:
+        TRANSACTIONS.append(sql)
+        TRANSACTION_ARGS.append(args)
+    
+        # Execute transaction once the number of queries reaches 1000
+        if len(TRANSACTIONS) > 1000:
+            cur.execute('BEGIN TRANSACTION')
+            #print('working')
+            for trans, args in zip(TRANSACTIONS, TRANSACTION_ARGS):
+                try:
+                    cur.execute(trans, args)
+                except Exception as e:
+                    raise e
+    
+            conn.commit()
+            TRANSACTIONS, TRANSACTION_ARGS = [], []
+    except Exception as e:
+        raise e 
     return conn, cur
 
 
@@ -132,10 +133,7 @@ def insert_to_table(conn, cur, has_parent=False, **kwargs):
         if 'parent_id' not in kwargs:
             raise KeyError('Missing Argument: parent_id')
         else:
-            ins_parent = '''
-            INSERT INTO rc_reply (comment_id, parent_id, created_unix, score, comment, subreddit)
-            VALUES (?, ?, ?, ?, ?, ?)
-            '''
+            ins_parent = '''INSERT INTO rc_reply (comment_id, parent_id, created_unix, score, comment, subreddit) VALUES (?, ?, ?, ?, ?, ?) '''
             args = [
                 kwargs['comment_id'],
                 kwargs['parent_id'],
@@ -148,7 +146,7 @@ def insert_to_table(conn, cur, has_parent=False, **kwargs):
             conn, cur = transaction_builder(conn, cur, ins_parent, args)
     else:
         ins_no_parent = '''
-        INSERT INTO rc_parent (comment_id, created_unix, score, comment, subreddit)
+        INSERT INTO rc_comment(comment_id, created_unix, score, comment, subreddit)
         VALUES (?, ?, ?, ?, ?)
         '''
         args = [
@@ -186,36 +184,46 @@ if __name__ == '__main__':
     row_counter = 0
 
     try:
-        for timeframe in TIMEFRAMES:
+        
             # Database connection.
-            conn = sqlite3.connect('../data/processed/RC_dirty_{}.db'.format(timeframe.split('-')[0]))
+            conn = sqlite3.connect('../data/processed/RC_dirty_sample.db')
             cur = conn.cursor()
-
+            
             cur = create_tables(cur)
 
             # Open the reddit comments file.
-            with open('../data/raw/RC_{}'.format(timeframe), buffering=10000000) as data:
+            with open('../sample.json', buffering=10000000) as data:
                 # Log events.
-                with open('../data/logs/dirty_{}.txt'.format(str(time.time()).split('.')[0]), mode='a') as log:
+                with open('../data/logs/dirty_sample.txt', mode='a') as log:
                     print('Beginning to write comments to the database. Time: {}'.format(str(datetime.now())))
                     log.write('Beginning to write comments to the database. Time: {}\n'.format(str(datetime.now())))
                     # Insert all comments to the database.
                     for row in data:
-                        row_counter += 1
 
+                        row_counter += 1
+                        #print(row)
                         # Load the data row as JSON.
                         row = json.loads(row)
 
                         # Required data.
                         parent_id = row['parent_id']
+                        #print(parent_id)
                         comment = reformat(row['body'])
+                        #print(comment)
                         created_unix = row['created_utc']
+                        #print(created_unix)
                         score = row['score']
+                        #print(score)
                         comment_id = row['id']
+                        #print(comment_id)
                         subreddit = row['subreddit']
-
+                        #print(subreddit)
+                        
+                        
                         if parent_id.split('_')[0] == 't3':
+                            #print(parent_id.split('_')[0])
                             if acceptable(comment):
+                                #print(parent_id.split('_')[0])
                                 con, cur = insert_to_table(
                                     conn,
                                     cur,
@@ -230,18 +238,24 @@ if __name__ == '__main__':
                             print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
                             log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
 
+            with open('../sample.json', buffering=10000000) as data:
+                # Log events.
+                with open('../data/logs/dirty_sample.txt', mode='a') as log:
+                    
                     row_counter = 0
                     print('Beginning to write replies to the database. Time: {}'.format(str(datetime.now())))
                     log.write('Beginning to write replies to the database. Time: {}\n'.format(str(datetime.now())))
+                    #print(data)
                     # Insert all replies to the comments.
                     for row in data:
                         row_counter += 1
-
+                        
                         # Load the data row as JSON.
                         row = json.loads(row)
-
+                        #print(row)
                         # Required data.
                         parent_id = row['parent_id']
+                        #print(parent_id)
                         comment = reformat(row['body'])
                         created_unix = row['created_utc']
                         score = row['score']
@@ -250,6 +264,8 @@ if __name__ == '__main__':
 
                         if parent_id.split('_')[0] == 't1':
                             if acceptable(comment):
+                                #print(comment)
+                                #print(parent_id.split('_')[0])
                                 con, cur = insert_to_table(
                                     conn,
                                     cur,
@@ -265,6 +281,7 @@ if __name__ == '__main__':
                         if row_counter % 10000 == 0:
                             print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
                             log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
+    
     except Exception as e:
         raise e
     finally:
