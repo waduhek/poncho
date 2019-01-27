@@ -1,4 +1,8 @@
 import sqlite3
+from datetime import datetime
+import time
+
+from .dirty_populate import transaction_builder
 
 # Year and month of when the data was collected.
 TIMEFRAMES = [
@@ -6,6 +10,10 @@ TIMEFRAMES = [
     '2018-02',
     '2018-03',
 ]
+
+# Global lists to allow for more efficient insertion of data into the database.
+TRANSACTIONS = []
+TRANSACTION_ARGS = []
 
 
 def create_clean_table(cur):
@@ -20,7 +28,9 @@ def create_clean_table(cur):
     CREATE TABLE IF NOT EXISTS rc_cleaned (
         id INT PRIMARY KEY AUTOINCREMENT,
         comment TEXT,
-        reply TEXT
+        reply TEXT,
+        comment_score INT,
+        reply_score INT
     )
     '''
     cur.execute(sql)
@@ -37,7 +47,7 @@ def create_view(cur):
         Database cursor.
     '''
     sql = '''
-    CREATE VIEW comment_reply
+    CREATE TEMPORARY VIEW comment_reply
     AS
         SELECT
             rc_comment.comment AS comment,
@@ -54,10 +64,59 @@ def create_view(cur):
     return cur
 
 
+def get_best_comment_and_replies(cur):
+    '''Query the database to obtain a reply to the comment with the best possible score.
+    The result of the query will NOT be fetched by this function.
+
+    Args:
+        cur -> Database cursor.
+    Returns:
+        Database cursor.
+    '''
+    query = '''
+    SELECT comment, reply, comment_score, MAX(reply_score) AS max_reply_score
+    FROM comment_reply
+    GROUP BY comment
+    '''
+    cur.execute(query)
+
+    return cur
+
+
+def insert_comment_and_reply(conn, cur, val):
+    '''Insert the obtained comment and reply to the new table.
+
+    Args:
+        conn -> Database connection.
+        cur -> Database cursor.
+        val -> Data to be entered. Has to be an iterable (list or tuple). Note that 'val' must contain values for just one
+               row i.e. use cursor.fetchone() only.
+    Raises:
+        TypeError if 'val' is not an iterable (list or tuple).
+    Returns:
+        Database connection.
+        Database cursor.
+    '''
+    # Check type of the arguments passed.
+    if type(val) is not list or type(val) is not tuple:
+        raise TypeError('Argument: val is not an iterable.')
+
+    query = '''
+    INSERT INTO rc_cleaned (comment, reply, comment_score, reply_score)
+    VALUES (?, ?, ?, ?)
+    '''
+
+    conn, cur = transaction_builder(conn, cur, query, val)
+
+    return conn, cur
+
+
 if __name__ == '__main__':
-    paired_rows = 0
+    row_counter = 0
 
     try:
+        log = open('../data/logs/clean_{}.txt'.format(str(time.time()).split('.')[0]), mode='a')
+
         for timeframe in TIMEFRAMES:
             # Database connections.
             dirty_conn = sqlite3.connect('../data/processed/RC_dirty_{}.db'.format(timeframe.split('-')[0]))
@@ -71,10 +130,34 @@ if __name__ == '__main__':
             # Create a view containing comment, reply to the comment and the scores of the comment and reply.
             dirty_cur = create_view(dirty_cur)
 
-            
+            # Get the best comment and replies.
+            dirty_cur = get_best_comment_and_replies(dirty_cur)
+
+            # Insert the values into the database.
+            while True:
+                rows = dirty_cur.fetchmany(1000)
+
+                # Check if 'rows' is empty.
+                if not rows:
+                    break
+
+                # Pass the result to be inserted into the database.
+                for row in rows:
+                    row_counter += 1
+
+                    dirty_conn, dirty_cur = insert_comment_and_reply(dirty_conn, dirty_cur, row)
+
+                if row_counter % 10000 == 0:
+                    print('No. of rows processed: {}. Time: {}'.format(len(rows), str(datetime.now())))
+                    log.write('No. of rows processed: {}. Time: {}\n'.format(len(rows), str(datetime.now())))
     except Exception as e:
         raise e
     finally:
+        # Print and log the finishing statement.
+        print('Finishing up.. Time: {}'.format(str(datetime.now())))
+        log.write('Finishing up.. Time: {}\n'.format(str(datetime.now())))
+        log.close()
+
         # Close all database connections.
         dirty_cur.close()
         dirty_conn.close()
