@@ -111,7 +111,7 @@ def insert_comment_and_reply(conn, cur, val):
     return conn, cur
 
 
-if __name__ == '__main__':
+def main():
     row_counter = 0
 
     try:
@@ -163,3 +163,7 @@ if __name__ == '__main__':
         dirty_conn.close()
         clean_cur.close()
         clean_conn.close()
+
+
+if __name__ == '__main__':
+    main()
