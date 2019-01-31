@@ -1,3 +1,4 @@
 # poncho
-A seq2seq Bot with a cute name
-Still in works
+A Deep Learning seq2seq chatbot. 
+
+Still under development.
