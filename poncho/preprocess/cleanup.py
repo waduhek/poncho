@@ -111,13 +111,13 @@ def insert_comment_and_reply(conn, cur, val):
     return conn, cur
 
 
-def main():
+def main(timeframes):
     row_counter = 0
 
     try:
         log = open('../data/logs/clean_{}.txt'.format(str(time.time()).split('.')[0]), mode='a')
 
-        for timeframe in TIMEFRAMES:
+        for timeframe in timeframes:
             # Database connections.
             dirty_conn = sqlite3.connect('../data/processed/RC_dirty_{}.db'.format(timeframe.split('-')[0]))
             dirty_cur = dirty_conn.cursor()

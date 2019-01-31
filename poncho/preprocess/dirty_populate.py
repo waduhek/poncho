@@ -182,14 +182,14 @@ def acceptable(txt):
         return True
 
 
-def main():
+def main(timeframes):
     row_counter = 0
 
     try:
         # Logs
         log = open('../data/logs/dirty_{}.txt'.format(str(time.time()).split('.')[0]), mode='a')
 
-        for timeframe in TIMEFRAMES:
+        for timeframe in timeframes:
             # Database connection.
             conn = sqlite3.connect('../data/processed/RC_dirty_{}.db'.format(timeframe.split('-')[0]))
             cur = conn.cursor()
@@ -197,7 +197,7 @@ def main():
             cur = create_tables(cur)
 
             # Open the reddit comments file.
-            with open('../data/raw/RC_{}'.format(timeframe), buffering=10000000) as data:
+            with open('../data/raw/RC_{}.json'.format(timeframe), buffering=10000000) as data:
                 print('Beginning to write comments to the database. Time: {}'.format(str(datetime.now())))
                 log.write('Beginning to write comments to the database. Time: {}\n'.format(str(datetime.now())))
                 # Insert all comments to the database.
