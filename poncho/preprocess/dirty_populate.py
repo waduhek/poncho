@@ -2,6 +2,9 @@ import sqlite3
 import json
 import time
 from datetime import datetime
+import os
+
+from utils.get_base_dir import get_base_dir
 
 # Year and month of when the data was collected.
 TIMEFRAMES = [
@@ -59,7 +62,7 @@ def reformat(text):
     Returns:
         Reformatted text.
     '''
-    return text.replace('\n', 'newlinechar').replace('\r', 'newlinechar').replace('"', "'")
+    return text.replace('\n', '<NL>').replace('\r', '<CR>').replace('"', "'")
 
 
 def transaction_builder(conn, cur, sql, args):
@@ -185,19 +188,25 @@ def acceptable(txt):
 def main(timeframes):
     row_counter = 0
 
+    # Base Directory
+    BASE_DIR = get_base_dir()
+
     try:
         # Logs
-        log = open('../data/logs/dirty_{}.txt'.format(str(time.time()).split('.')[0]), mode='a')
+        log = open(
+            os.path.join(BASE_DIR, 'data', 'logs', 'dirty_{}.txt'.format(str(time.time()).split('.')[0])),
+            mode='a'
+        )
 
         for timeframe in timeframes:
             # Database connection.
-            conn = sqlite3.connect('../data/processed/RC_dirty_{}.db'.format(timeframe.split('-')[0]))
+            conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}.db'.format(timeframe.split('-')[0])))
             cur = conn.cursor()
 
             cur = create_tables(cur)
 
             # Open the reddit comments file.
-            with open('../data/raw/RC_{}.json'.format(timeframe), buffering=10000000) as data:
+            with open(os.path.join(BASE_DIR, 'data', 'raw', 'RC_{}'.format(timeframe)), buffering=10000000) as data:
                 print('Beginning to write comments to the database. Time: {}'.format(str(datetime.now())))
                 log.write('Beginning to write comments to the database. Time: {}\n'.format(str(datetime.now())))
                 # Insert all comments to the database.
@@ -232,7 +241,7 @@ def main(timeframes):
                         log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
 
             # Insert replies for the comments.
-            with open('../data/raw/RC_{}'.format(timeframe), buffering=10000000) as data:
+            with open(os.path.join(BASE_DIR, 'data', 'raw', 'RC_{}'.format(timeframe)), buffering=10000000) as data:
                 row_counter = 0
 
                 print('Beginning to write replies to the database. Time: {}'.format(str(datetime.now())))
@@ -269,17 +278,13 @@ def main(timeframes):
                     if row_counter % 10000 == 0:
                         print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
                         log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
+
+            # Print and log finishing statements.
+            print('Finishing entering data to the database. Time: {}'.format(str(datetime.now())))
+            log.write('Finishing entering data to the database. Time: {}\n'.format(str(datetime.now())))
+            log.close()
     except Exception as e:
         raise e
-    finally:
-        # Print and log finishing statements.
-        print('Finishing entering data to the database. Time: {}'.format(str(datetime.now())))
-        log.write('Finishing entering data to the database. Time: {}\n'.format(str(datetime.now())))
-        log.close()
 
-        cur.close()
-        conn.close()
-
-
-if __name__ == '__main__':
-    main()
+    cur.close()
+    conn.close()

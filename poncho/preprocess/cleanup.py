@@ -1,8 +1,10 @@
 import sqlite3
 from datetime import datetime
 import time
+import os
 
 from .dirty_populate import transaction_builder
+from utils.get_base_dir import get_base_dir
 
 # Year and month of when the data was collected.
 TIMEFRAMES = [
@@ -114,14 +116,18 @@ def insert_comment_and_reply(conn, cur, val):
 def main(timeframes):
     row_counter = 0
 
+    # Base Directory
+    BASE_DIR = get_base_dir()
+
     try:
-        log = open('../data/logs/clean_{}.txt'.format(str(time.time()).split('.')[0]), mode='a')
+        log = open(os.path.join(BASE_DIR, 'data', 'logs', 'clean_{}'.format(str(time.time()).split('.')[0])), mode='a')
 
         for timeframe in timeframes:
             # Database connections.
-            dirty_conn = sqlite3.connect('../data/processed/RC_dirty_{}.db'.format(timeframe.split('-')[0]))
+            dirty_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}'.format(timeframe.split('-')[0])))
             dirty_cur = dirty_conn.cursor()
-            clean_conn = sqlite3.connect('../data/processed/RC_clean_{}.db'.format(timeframe.split('-')[0]))
+
+            clean_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}'.format(timeframe.split('-')[0])))
             clean_cur = clean_conn.cursor()
 
             # Create the table.
@@ -150,20 +156,17 @@ def main(timeframes):
                 if row_counter % 10000 == 0:
                     print('No. of rows processed: {}. Time: {}'.format(len(rows), str(datetime.now())))
                     log.write('No. of rows processed: {}. Time: {}\n'.format(len(rows), str(datetime.now())))
-    except Exception as e:
-        raise e
-    finally:
+
         # Print and log the finishing statement.
         print('Finishing up.. Time: {}'.format(str(datetime.now())))
         log.write('Finishing up.. Time: {}\n'.format(str(datetime.now())))
         log.close()
+    except Exception as e:
+        raise e
 
-        # Close all database connections.
-        dirty_cur.close()
-        dirty_conn.close()
-        clean_cur.close()
-        clean_conn.close()
+    # Close all database connections.
+    dirty_cur.close()
+    dirty_conn.close()
 
-
-if __name__ == '__main__':
-    main()
+    clean_cur.close()
+    clean_conn.close()
