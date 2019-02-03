@@ -3,7 +3,7 @@ from datetime import datetime
 import time
 import os
 
-from .dirty_populate import transaction_builder
+from utils.transaction_builder import transaction_builder
 from utils.get_base_dir import get_base_dir
 
 

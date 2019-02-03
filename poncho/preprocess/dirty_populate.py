@@ -5,6 +5,8 @@ from datetime import datetime
 import os
 
 from utils.get_base_dir import get_base_dir
+from utils.transaction_builder import transaction_builder
+from utils.reformat import reformat
 
 
 # Global lists to allow for more efficient insertion of data into the database.
@@ -45,53 +47,6 @@ def create_tables(cur):
     cur.execute(reply)
 
     return cur
-
-
-def reformat(text):
-    '''Convert escape characters to strings and convert all double inverted commas to a single
-    inverted comma.
-
-    Args:
-        text -> Text to be reformated.
-    Returns:
-        Reformatted text.
-    '''
-    return text.replace('\n', '<NL>').replace('\r', '<CR>').replace('"', "'")
-
-
-def transaction_builder(conn, cur, sql, args):
-    '''Build a transaction and execute SQL statements after 1000 SQL statements have been accumulated.
-    Requires 2 lists: TRANSACTIONS and TRANSACTION_ARGS to be defined.
-
-    Args:
-        conn -> Database connection.
-        cur -> Database cursor.
-        sql -> SQL statement to be executed.
-        args -> Values to be inserted for the corresponding query.
-    Returns:
-        Database connection.
-        Database cursor.
-    '''
-    global TRANSACTIONS
-    global TRANSACTION_ARGS
-
-    TRANSACTIONS.append(sql)
-    TRANSACTION_ARGS.append(args)
-
-    # Execute transaction once the number of queries reaches 1000
-    if len(TRANSACTIONS) > 1000:
-        cur.execute('BEGIN TRANSACTION')
-
-        for trans, args in zip(TRANSACTIONS, TRANSACTION_ARGS):
-            try:
-                cur.execute(trans, args)
-            except Exception as e:
-                pass
-
-        conn.commit()
-        TRANSACTIONS, TRANSACTION_ARGS = [], []
-
-    return conn, cur
 
 
 def insert_to_table(conn, cur, has_parent=False, **kwargs):
