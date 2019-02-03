@@ -1,4 +1,5 @@
 import argparse
+import re
 
 from preprocess.dirty_populate import main as dirty_main
 from preprocess.cleanup import main as cleanup_main
@@ -13,9 +14,16 @@ ACTIONS = [
 parser = argparse.ArgumentParser(description='CLI to interact with poncho the chatbot')
 
 # Add action argument
-parser.add_argument('action', choices=ACTIONS, help='Action to be performed')
+parser.add_argument('action', choices=ACTIONS, help='Action to be performed.')
 # Add timeframes option
-parser.add_argument('-t', '--timeframe', nargs='+', help='Timeframes that have to processed')
+parser.add_argument('-t', '--timeframe', nargs='+', help='Timeframes that have to processed.')
+# Add autoclean option
+parser.add_argument(
+    '-a',
+    '--autoclean',
+    action='store_true',
+    help='Autoexecute "cleanupdb" command after "createdirtydb" for the provided timeframes.'
+)
 
 # Parse the entered arguments
 args = parser.parse_args()
@@ -24,7 +32,20 @@ if args.action == 'createdirtydb':
     if not args.timeframe:
         parser.error('-t is required when using "createdirtydb".')
     else:
+        # Check the formatting of the timeframes provided
+        pattern = r'[0-9]{4}\-[0-9]{2}'
+        regexp = re.compile(pattern)
+        for timeframe in args.timeframe:
+            if not regexp.match(timeframe):
+                parser.error('{} is not a valid timeframe.'.format(timeframe))
+
+        # Call the function to create the dirty database
         dirty_main(args.timeframe)
+
+        # Check if "autoclean" command is set
+        if args.autoclean:
+            # Call the function to create the clean database
+            cleanup_main(args.timeframe)
 elif args.action == 'cleanupdb':
     if not args.timeframe:
         parser.error('-t is required when using "cleanupdb"')
