@@ -6,12 +6,6 @@ import os
 from .dirty_populate import transaction_builder
 from utils.get_base_dir import get_base_dir
 
-# Year and month of when the data was collected.
-TIMEFRAMES = [
-    '2018-01',
-    '2018-02',
-    '2018-03',
-]
 
 # Global lists to allow for more efficient insertion of data into the database.
 TRANSACTIONS = []
@@ -122,6 +116,9 @@ def main(timeframes):
     try:
         log = open(os.path.join(BASE_DIR, 'data', 'logs', 'clean_{}'.format(str(time.time()).split('.')[0])), mode='a')
 
+        log.write('Beginning to cleanup the data from the database. Time: {}\n\n'.format(str(datetime.now())))
+        print('Beginning to cleanup the data from the database. Time: {}\n'.format(str(datetime.now())))
+
         for timeframe in timeframes:
             # Database connections.
             dirty_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}'.format(timeframe.split('-')[0])))
@@ -159,7 +156,8 @@ def main(timeframes):
 
         # Print and log the finishing statement.
         print('Finishing up.. Time: {}'.format(str(datetime.now())))
-        log.write('Finishing up.. Time: {}\n'.format(str(datetime.now())))
+        log.write('\nFinishing up.. Time: {}\n'.format(str(datetime.now())))
+        log.write('==================================================================================\n\n')
         log.close()
     except Exception as e:
         raise e

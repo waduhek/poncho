@@ -6,12 +6,6 @@ import os
 
 from utils.get_base_dir import get_base_dir
 
-# Year and month of when the data was collected.
-TIMEFRAMES = [
-    '2018-01',
-    '2018-02',
-    '2018-03',
-]
 
 # Global lists to allow for more efficient insertion of data into the database.
 TRANSACTIONS = []
@@ -207,8 +201,8 @@ def main(timeframes):
 
             # Open the reddit comments file.
             with open(os.path.join(BASE_DIR, 'data', 'raw', 'RC_{}'.format(timeframe)), buffering=10000000) as data:
-                print('Beginning to write comments to the database. Time: {}'.format(str(datetime.now())))
-                log.write('Beginning to write comments to the database. Time: {}\n'.format(str(datetime.now())))
+                print('Beginning to write comments to the database. Time: {}\n'.format(str(datetime.now())))
+                log.write('Beginning to write comments to the database. Time: {}\n\n'.format(str(datetime.now())))
                 # Insert all comments to the database.
                 for row in data:
                     row_counter += 1
@@ -245,7 +239,7 @@ def main(timeframes):
                 row_counter = 0
 
                 print('Beginning to write replies to the database. Time: {}'.format(str(datetime.now())))
-                log.write('Beginning to write replies to the database. Time: {}\n'.format(str(datetime.now())))
+                log.write('\nBeginning to write replies to the database. Time: {}\n\n'.format(str(datetime.now())))
 
                 for row in data:
                     row_counter += 1
@@ -281,7 +275,8 @@ def main(timeframes):
 
             # Print and log finishing statements.
             print('Finishing entering data to the database. Time: {}'.format(str(datetime.now())))
-            log.write('Finishing entering data to the database. Time: {}\n'.format(str(datetime.now())))
+            log.write('\nFinishing entering data to the database. Time: {}\n'.format(str(datetime.now())))
+            log.write('===========================================================================\n\n')
             log.close()
     except Exception as e:
         raise e
