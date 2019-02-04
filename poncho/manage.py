@@ -33,7 +33,7 @@ if args.action == 'createdirtydb':
         parser.error('-t is required when using "createdirtydb".')
     else:
         # Check the formatting of the timeframes provided
-        pattern = r'[0-9]{4}\-[0-9]{2}'
+        pattern = r'^20[0-9]{2}\-(?:0[1-9]{1}|1[012]{1})$'
         regexp = re.compile(pattern)
         for timeframe in args.timeframe:
             if not regexp.match(timeframe):
