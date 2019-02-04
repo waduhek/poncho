@@ -2,6 +2,7 @@ import sqlite3
 from datetime import datetime
 import time
 import os
+import errno
 
 from utils.transaction_builder import transaction_builder
 from utils.get_base_dir import get_base_dir
@@ -113,8 +114,18 @@ def main(timeframes):
     # Base Directory
     BASE_DIR = get_base_dir()
 
+    # Check if some directories exist or not
     try:
-        log = open(os.path.join(BASE_DIR, 'data', 'logs', 'clean_{}'.format(str(time.time()).split('.')[0])), mode='a')
+        os.makedirs(os.path.join(BASE_DIR, 'data', 'logs'))
+        os.makedirs(os.path.join(BASE_DIR, 'data', 'processed'))
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise e
+        else:
+            pass
+
+    try:
+        log = open(os.path.join(BASE_DIR, 'data', 'logs', 'clean_{}.txt'.format(str(time.time()).split('.')[0])), mode='a')
 
         log.write('Beginning to cleanup the data from the database. Time: {}\n\n'.format(str(datetime.now())))
         print('Beginning to cleanup the data from the database. Time: {}\n'.format(str(datetime.now())))

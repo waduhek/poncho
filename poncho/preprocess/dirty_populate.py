@@ -3,6 +3,7 @@ import json
 import time
 from datetime import datetime
 import os
+import errno
 
 from utils.get_base_dir import get_base_dir
 from utils.transaction_builder import transaction_builder
@@ -139,6 +140,17 @@ def main(timeframes):
 
     # Base Directory
     BASE_DIR = get_base_dir()
+
+    # Check if some directories exist or not
+    try:
+        os.makedirs(os.path.join(BASE_DIR, 'data', 'logs'))
+        os.makedirs(os.path.join(BASE_DIR, 'data', 'raw'))
+        os.makedirs(os.path.join(BASE_DIR, 'data', 'processed'))
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise e
+        else:
+            pass
 
     try:
         # Logs
