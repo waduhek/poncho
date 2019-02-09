@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import sqlite3
 from datetime import datetime
 import time
@@ -23,7 +25,7 @@ def create_clean_table(cur):
     '''
     sql = '''
     CREATE TABLE IF NOT EXISTS rc_cleaned (
-        id INT PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         comment TEXT,
         reply TEXT,
         comment_score INT,
@@ -132,10 +134,10 @@ def main(timeframes):
 
         for timeframe in timeframes:
             # Database connections.
-            dirty_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}'.format(timeframe.split('-')[0])))
+            dirty_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}.db'.format(timeframe.split('-')[0])))
             dirty_cur = dirty_conn.cursor()
 
-            clean_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}'.format(timeframe.split('-')[0])))
+            clean_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}.db'.format(timeframe.split('-')[0])))
             clean_cur = clean_conn.cursor()
 
             # Create the table.
@@ -159,7 +161,7 @@ def main(timeframes):
                 for row in rows:
                     row_counter += 1
 
-                    dirty_conn, dirty_cur = insert_comment_and_reply(dirty_conn, dirty_cur, row)
+                    dirty_conn, dirty_cur = insert_comment_and_reply(dirty_conn, dirty_cur, list(row))
 
                 if row_counter % 10000 == 0:
                     print('No. of rows processed: {}. Time: {}'.format(len(rows), str(datetime.now())))
