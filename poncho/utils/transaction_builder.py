@@ -1,3 +1,8 @@
+# Global lists to allow for more efficient insertion of data into the database.
+TRANSACTIONS = []
+TRANSACTION_ARGS = []
+
+
 def transaction_builder(conn, cur, sql, args):
     '''Build a transaction and execute SQL statements after 1000 SQL statements have been accumulated.
     Requires 2 lists: TRANSACTIONS and TRANSACTION_ARGS to be defined.
