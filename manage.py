@@ -1,8 +1,8 @@
 import argparse
 import re
 
-from preprocess.dirty_populate import main as dirty_main
-from preprocess.cleanup import main as cleanup_main
+from poncho.preprocess.dirty_populate import main as dirty_main
+from poncho.preprocess.cleanup import main as cleanup_main
 
 # Available actions
 ACTIONS = [

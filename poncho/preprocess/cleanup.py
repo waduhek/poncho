@@ -6,8 +6,8 @@ import time
 import os
 import errno
 
-from utils.transaction_builder import transaction_builder
-from utils.get_base_dir import get_base_dir
+from poncho.utils.transaction_builder import transaction_builder
+from poncho.utils.get_base_dir import get_base_dir
 
 
 # Global lists to allow for more efficient insertion of data into the database.
