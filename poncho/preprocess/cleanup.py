@@ -10,11 +10,6 @@ from poncho.utils.transaction_builder import transaction_builder
 from poncho.utils.get_base_dir import get_base_dir
 
 
-# Global lists to allow for more efficient insertion of data into the database.
-TRANSACTIONS = []
-TRANSACTION_ARGS = []
-
-
 def create_clean_table(cur):
     '''Create the required table for inserting the cleaned up data.
 

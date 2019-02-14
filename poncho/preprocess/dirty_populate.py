@@ -12,11 +12,6 @@ from poncho.utils.transaction_builder import transaction_builder
 from poncho.utils.reformat import reformat
 
 
-# Global lists to allow for more efficient insertion of data into the database.
-TRANSACTIONS = []
-TRANSACTION_ARGS = []
-
-
 def create_tables(cur):
     '''Create two tables for the specified year; one to store the parent comments
     and the other to store replies to the parent.
