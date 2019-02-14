@@ -29,7 +29,7 @@ def transaction_builder(conn, cur, sql, args):
         for trans, args in zip(TRANSACTIONS, TRANSACTION_ARGS):
             try:
                 cur.execute(trans, args)
-            except Exception as e:
+            except Exception:
                 pass
 
         conn.commit()

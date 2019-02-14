@@ -170,8 +170,8 @@ def main(timeframes):
 
             # Open the reddit comments file.
             with open(os.path.join(BASE_DIR, 'data', 'raw', 'RC_{}'.format(timeframe)), buffering=10000000) as data:
-                print('Beginning to write comments to the database. Time: {}\n'.format(str(datetime.now())))
-                log.write('Beginning to write comments to the database. Time: {}\n\n'.format(str(datetime.now())))
+                print('Beginning to write comments of {} to the database. Time: {}\n'.format(timeframe, str(datetime.now())))
+                log.write('Beginning to write comments of {} to the database. Time: {}\n\n'.format(timeframe, str(datetime.now())))
                 # Insert all comments to the database.
                 for row in data:
                     row_counter += 1
@@ -203,12 +203,14 @@ def main(timeframes):
                         print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
                         log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
 
+            log.write('\nDone writing comments of {} to the database\n\n'.format(timeframe))
+
             # Insert replies for the comments.
             with open(os.path.join(BASE_DIR, 'data', 'raw', 'RC_{}'.format(timeframe)), buffering=10000000) as data:
                 row_counter = 0
 
-                print('Beginning to write replies to the database. Time: {}'.format(str(datetime.now())))
-                log.write('\nBeginning to write replies to the database. Time: {}\n\n'.format(str(datetime.now())))
+                print('Beginning to write replies of {} to the database. Time: {}'.format(timeframe, str(datetime.now())))
+                log.write('\nBeginning to write replies of {} to the database. Time: {}\n\n'.format(timeframe, str(datetime.now())))
 
                 for row in data:
                     row_counter += 1
@@ -241,6 +243,8 @@ def main(timeframes):
                     if row_counter % 10000 == 0:
                         print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
                         log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
+            
+            log.write('\nDone writing replies of {} to the database\n\n'.format(timeframe))
 
             # Print and log finishing statements.
             print('Finishing entering data to the database. Time: {}'.format(str(datetime.now())))

@@ -7,4 +7,4 @@ def reformat(text):
     Returns:
         Reformatted text.
     '''
-    return text.replace('\n', '<NL>').replace('\r', '<CR>').replace('"', "'")
+    return text.replace('\n', '<NL>').replace('\r', '<CR>').replace('"', "'").replace('\t', "<TAB>")

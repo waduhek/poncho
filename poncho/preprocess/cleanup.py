@@ -77,7 +77,7 @@ def get_best_comment_and_replies(cur):
     FROM comment_reply
     GROUP BY comment
     '''
-    cur.execute(query)
+    cur = cur.execute(query)
 
     return cur
 
@@ -90,22 +90,16 @@ def insert_comment_and_reply(conn, cur, val):
         cur -> Database cursor.
         val -> Data to be entered. Has to be an iterable (list or tuple). Note that 'val' must contain values for just one
                row i.e. use cursor.fetchone() only.
-    Raises:
-        TypeError if 'val' is not an iterable (list or tuple).
     Returns:
         Database connection.
         Database cursor.
     '''
-    # Check type of the arguments passed.
-    if type(val) is not list or type(val) is not tuple:
-        raise TypeError('Argument: val is not an iterable.')
-
     query = '''
     INSERT INTO rc_cleaned (comment, reply, comment_score, reply_score)
     VALUES (?, ?, ?, ?)
     '''
 
-    conn, cur = transaction_builder(conn, cur, query, val)
+    conn, cur = transaction_builder(conn, cur, query, list(val))
 
     return conn, cur
 
@@ -151,21 +145,20 @@ def main(timeframes):
 
             # Insert the values into the database.
             while True:
-                rows = dirty_cur.fetchmany(1000)
+                row = dirty_cur.fetchone()
 
-                # Check if 'rows' is empty.
-                if not rows:
+                # Check if 'row' is empty.
+                if not row:
                     break
 
-                # Pass the result to be inserted into the database.
-                for row in rows:
-                    row_counter += 1
+                row_counter += 1
 
-                    dirty_conn, dirty_cur = insert_comment_and_reply(dirty_conn, dirty_cur, list(row))
+                # Pass the result to be inserted into the database.
+                dirty_conn, dirty_cur = insert_comment_and_reply(dirty_conn, dirty_cur, list(row))
 
                 if row_counter % 10000 == 0:
-                    print('No. of rows processed: {}. Time: {}'.format(len(rows), str(datetime.now())))
-                    log.write('No. of rows processed: {}. Time: {}\n'.format(len(rows), str(datetime.now())))
+                    print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
+                    log.write('No. of rows processed: {}. Time: {}\n'.format(row_counter, str(datetime.now())))
 
         # Print and log the finishing statement.
         print('Finishing up.. Time: {}'.format(str(datetime.now())))
