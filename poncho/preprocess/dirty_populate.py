@@ -184,7 +184,7 @@ def main(timeframes):
 
                     if parent_id.split('_')[0] == 't3':
                         if acceptable(comment):
-                            con, cur = insert_to_table(
+                            conn, cur = insert_to_table(
                                 conn,
                                 cur,
                                 comment=comment,
@@ -223,7 +223,7 @@ def main(timeframes):
 
                     if parent_id.split('_')[0] == 't1':
                         if acceptable(comment):
-                            con, cur = insert_to_table(
+                            conn, cur = insert_to_table(
                                 conn,
                                 cur,
                                 has_parent=True,

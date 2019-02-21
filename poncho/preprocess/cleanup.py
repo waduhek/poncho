@@ -27,7 +27,7 @@ def create_clean_table(cur):
         reply_score INT
     )
     '''
-    cur.execute(sql)
+    cur = cur.execute(sql)
 
     return cur
 
@@ -41,7 +41,7 @@ def create_view(cur):
         Database cursor.
     '''
     sql = '''
-    CREATE TEMPORARY VIEW comment_reply
+    CREATE TABLE IF NOT EXISTS comment_reply
     AS
         SELECT
             rc_comment.comment AS comment,
@@ -51,7 +51,7 @@ def create_view(cur):
         FROM rc_comment INNER JOIN rc_reply ON rc_comment.comment_id = rc_reply.parent_id
     '''
     try:
-        cur.execute(sql)
+        cur = cur.execute(sql)
     except Exception as e:
         raise e
 
@@ -77,24 +77,39 @@ def get_best_comment_and_replies(cur):
     return cur
 
 
-def insert_comment_and_reply(conn, cur, val):
+def insert_comment_and_reply(conn, cur, **kwargs):
     '''Insert the obtained comment and reply to the new table.
 
     Args:
         conn -> Database connection.
         cur -> Database cursor.
-        val -> Data to be entered. Has to be an iterable (list or tuple). Note that 'val' must contain values for just one
-               row i.e. use cursor.fetchone() only.
+        Required keyword arguments: comment, reply, comment_score, reply_score.
     Returns:
         Database connection.
         Database cursor.
     '''
+    if 'comment' not in kwargs:
+        raise KeyError('Missing Argument: comment')
+    elif 'reply' not in kwargs:
+        raise KeyError('Missing Argument: reply')
+    elif 'comment_score' not in kwargs:
+        raise KeyError('Missing Argument: comment_score')
+    elif 'reply_score' not in kwargs:
+        raise KeyError('Missing Argument: reply_score')
+
     query = '''
     INSERT INTO rc_cleaned (comment, reply, comment_score, reply_score)
     VALUES (?, ?, ?, ?)
     '''
 
-    conn, cur = transaction_builder(conn, cur, query, list(val))
+    args = [
+        kwargs['comment'],
+        kwargs['reply'],
+        kwargs['comment_score'],
+        kwargs['reply_score'],
+    ]
+
+    conn, cur = transaction_builder(conn, cur, query, args)
 
     return conn, cur
 
@@ -122,6 +137,8 @@ def main(timeframes):
         print('Beginning to cleanup the data from the database. Time: {}\n'.format(str(datetime.now())))
 
         for timeframe in timeframes:
+            log.write('Cleaning data of {}. Time: {}\n\n'.format(timeframe, str(datetime.now())))
+
             # Database connections.
             dirty_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}.db'.format(timeframe.split('-')[0])))
             dirty_cur = dirty_conn.cursor()
@@ -149,7 +166,14 @@ def main(timeframes):
                 row_counter += 1
 
                 # Pass the result to be inserted into the database.
-                dirty_conn, dirty_cur = insert_comment_and_reply(dirty_conn, dirty_cur, list(row))
+                clean_conn, clean_cur = insert_comment_and_reply(
+                    clean_conn,
+                    clean_cur,
+                    comment=row[0],
+                    reply=row[1],
+                    comment_score=row[2],
+                    reply_score=row[3]
+                )
 
                 if row_counter % 10000 == 0:
                     print('No. of rows processed: {}. Time: {}'.format(row_counter, str(datetime.now())))
