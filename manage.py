@@ -3,11 +3,13 @@ import re
 
 from poncho.preprocess.dirty_populate import main as dirty_main
 from poncho.preprocess.cleanup import main as cleanup_main
+from poncho.preprocess.convert_to_csv import main as prepare_main
 
 # Available actions
 ACTIONS = [
     'createdirtydb',
     'cleanupdb',
+    'preparedata',
 ]
 
 # Initalise parser
@@ -23,6 +25,13 @@ parser.add_argument(
     '--autoclean',
     action='store_true',
     help='Autoexecute "cleanupdb" command after "createdirtydb" for the provided timeframes.'
+)
+# Add prepare option
+parser.add_argument(
+    '-p',
+    '--prepare',
+    action='store_true',
+    help='Autoexecute "preparedata" command after "cleanupdb" for the provided timeframes.'
 )
 
 # Parse the entered arguments
@@ -42,12 +51,27 @@ if args.action == 'createdirtydb':
         # Call the function to create the dirty database
         dirty_main(args.timeframe)
 
-        # Check if "autoclean" command is set
+        # Check if "autoclean" option is set
         if args.autoclean:
             # Call the function to create the clean database
             cleanup_main(args.timeframe)
+
+            # Check if "prepare" option is set
+            if args.prepare:
+                # Call function to prepare the data
+                prepare_main(args.timeframe)
 elif args.action == 'cleanupdb':
     if not args.timeframe:
         parser.error('-t is required when using "cleanupdb"')
     else:
         cleanup_main(args.timeframe)
+
+        # Check if "prepare" option is set
+        if args.prepare:
+            # Call function to prepare data
+            prepare_main(args.timeframe)
+elif args.action == 'preparedata':
+    if not args.timeframe:
+        parser.error('-t is required when using "preparedata"')
+    else:
+        prepare_main(args.timeframe)

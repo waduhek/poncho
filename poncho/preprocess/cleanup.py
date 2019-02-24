@@ -41,7 +41,7 @@ def create_view(cur):
         Database cursor.
     '''
     sql = '''
-    CREATE TABLE IF NOT EXISTS comment_reply
+    CREATE VIEW IF NOT EXISTS comment_reply
     AS
         SELECT
             rc_comment.comment AS comment,
