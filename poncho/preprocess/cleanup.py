@@ -114,7 +114,7 @@ def insert_comment_and_reply(conn, cur, **kwargs):
     return conn, cur
 
 
-def main(timeframes):
+def main(unique_years):
     row_counter = 0
 
     # Base Directory
@@ -136,14 +136,14 @@ def main(timeframes):
         log.write('Beginning to cleanup the data from the database. Time: {}\n\n'.format(str(datetime.now())))
         print('Beginning to cleanup the data from the database. Time: {}\n'.format(str(datetime.now())))
 
-        for timeframe in timeframes:
-            log.write('Cleaning data of {}. Time: {}\n\n'.format(timeframe, str(datetime.now())))
+        for year in unique_years:
+            log.write('Cleaning data of {}. Time: {}\n\n'.format(year, str(datetime.now())))
 
             # Database connections.
-            dirty_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}.db'.format(timeframe.split('-')[0])))
+            dirty_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}.db'.format(year)))
             dirty_cur = dirty_conn.cursor()
 
-            clean_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}.db'.format(timeframe.split('-')[0])))
+            clean_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}.db'.format(year)))
             clean_cur = clean_conn.cursor()
 
             # Create the table.

@@ -245,9 +245,9 @@ def main(timeframes):
             print('Finishing entering data to the database. Time: {}'.format(str(datetime.now())))
             log.write('\nFinishing entering data to the database. Time: {}\n'.format(str(datetime.now())))
             log.write('===========================================================================\n\n')
-            log.close()
     except Exception as e:
         raise e
 
+    log.close()
     cur.close()
     conn.close()

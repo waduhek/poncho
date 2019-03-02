@@ -36,7 +36,7 @@ def create_table(cur):
     return cur
 
 
-def main(timeframes):
+def main(unique_years):
     BASE_DIR = get_base_dir()
 
     # Try to create some required files if they do not exist already
@@ -55,12 +55,12 @@ def main(timeframes):
         log.write('Beginning preparation of data. Time: {}\n\n'.format(str(datetime.now())))
         print('Beginning preparation of data. Time: {}\n'.format(str(datetime.now())))
 
-        for timeframe in timeframes:
-            log.write('Preparing data of {}. Time: {}'.format(timeframe, str(datetime.now())))
-            print('Preparing data of {}. Time: {}'.format(timeframe, str(datetime.now())))
+        for year in unique_years:
+            log.write('Preparing data of {}. Time: {}'.format(year, str(datetime.now())))
+            print('Preparing data of {}. Time: {}'.format(year, str(datetime.now())))
 
             # Database connections
-            clean_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}.db'.format(timeframe.split('-')[0])))
+            clean_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}.db'.format(year)))
             clean_cur = clean_conn.cursor()
 
             # Create the required table
@@ -71,7 +71,7 @@ def main(timeframes):
             # Shuffle the data
             df = shuffle(df)
             # Write all the data to a CSV file
-            df.to_csv(os.path.join(BASE_DIR, 'data', 'prepared', 'prepared_{}.csv'.format(timeframe.split('-')[0])), mode='a')
+            df.to_csv(os.path.join(BASE_DIR, 'data', 'prepared', 'prepared_{}.csv'.format(year), mode='a'))
 
         log.write('Finishing up... Time: {}\n'.format(str(datetime.now())))
         log.write('===================================================================================\n\n')
