@@ -50,7 +50,7 @@ def main(unique_years):
             pass
 
     try:
-        log = open(os.path.join(BASE_DIR, 'data', 'logs', 'prepared_{}'.format(str(time.time()).split('.')[0])), mode='a')
+        log = open(os.path.join(BASE_DIR, 'data', 'logs', 'prepared_{}.txt'.format(str(time.time()).split('.')[0])), mode='a')
         
         log.write('Beginning preparation of data. Time: {}\n\n'.format(str(datetime.now())))
         print('Beginning preparation of data. Time: {}\n'.format(str(datetime.now())))
@@ -60,8 +60,17 @@ def main(unique_years):
             print('Preparing data of {}. Time: {}'.format(year, str(datetime.now())))
 
             # Database connections
-            clean_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}.db'.format(year)))
-            clean_cur = clean_conn.cursor()
+            try:
+                clean_conn = sqlite3.connect(
+                    'file:{}?mode=ro'.format(
+                        os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}.db'.format(year))
+                    ),
+                    uri=True
+                )
+                clean_cur = clean_conn.cursor()
+            except sqlite3.OperationalError:
+                print('Error: RC_clean_{}.db does not exist. \nYou may have forgotten to run "cleanupdb" or have deleted the required database file.'.format(year))
+                exit(errno.EIO)
 
             # Create the required table
             clean_cur = create_table(clean_cur)

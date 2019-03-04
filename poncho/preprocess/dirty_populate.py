@@ -158,7 +158,12 @@ def main(timeframes):
 
         for timeframe in timeframes:
             # Database connection.
-            conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}.db'.format(timeframe.split('-')[0])))
+            conn = sqlite3.connect(
+                'file:{}?mode=rwc'.format(
+                    os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}.db'.format(timeframe.split('-')[0]))
+                ),
+                uri=True
+            )
             cur = conn.cursor()
 
             cur = create_tables(cur)

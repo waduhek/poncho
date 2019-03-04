@@ -5,6 +5,7 @@ from datetime import datetime
 import time
 import os
 import errno
+from urllib.request import pathname2url
 
 from poncho.utils.transaction_builder import transaction_builder
 from poncho.utils.get_base_dir import get_base_dir
@@ -140,10 +141,28 @@ def main(unique_years):
             log.write('Cleaning data of {}. Time: {}\n\n'.format(year, str(datetime.now())))
 
             # Database connections.
-            dirty_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}.db'.format(year)))
-            dirty_cur = dirty_conn.cursor()
+            try:
+                dirty_conn = sqlite3.connect(
+                    'file:{}?mode=ro'.format(
+                        pathname2url(
+                            os.path.join(BASE_DIR, 'data', 'processed', 'RC_dirty_{}.db'.format(year))
+                        )
+                    ),
+                    uri=True
+                )
+                dirty_cur = dirty_conn.cursor()
+            except sqlite3.OperationalError:
+                print('Error: RC_dirty_{0}.db does not exist.\nYou may have forgotten to run "createdirtydb" or have deleted the required database file.'.format(year))
+                exit(errno.EIO)
 
-            clean_conn = sqlite3.connect(os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}.db'.format(year)))
+            clean_conn = sqlite3.connect(
+                'file:{}?mode=rwc'.format(
+                    pathname2url(
+                        os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}.db'.format(year))
+                    )
+                ),
+                uri=True
+            )
             clean_cur = clean_conn.cursor()
 
             # Create the table.

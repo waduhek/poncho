@@ -94,7 +94,7 @@ elif args.action == 'cleanupdb':
         parser.error('-t is required when using "cleanupdb"')
     else:
         # Check the formatting of the timeframes provided
-        regexp_check(args.timeframes)
+        regexp_check(args.timeframe)
 
         # Call the required function with the unique years
         cleanup_main(get_unique_years(args.timeframe))
@@ -108,7 +108,7 @@ elif args.action == 'preparedata':
         parser.error('-t is required when using "preparedata"')
     else:
         # Check the formatting of the timeframes provided
-        regexp_check(args.timeframes)
+        regexp_check(args.timeframe)
 
         # Call the function with the unique years
         prepare_main(get_unique_years(args.timeframe))
