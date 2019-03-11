@@ -4,6 +4,7 @@ import re
 from poncho.preprocess.dirty_populate import main as dirty_main
 from poncho.preprocess.cleanup import main as cleanup_main
 from poncho.preprocess.convert_to_csv import main as prepare_main
+from poncho.postprocess.prepare_data import main as train_data_main
 
 
 # Available actions
@@ -11,6 +12,7 @@ ACTIONS = [
     'createdirtydb',
     'cleanupdb',
     'preparedata',
+    'createtraindata',
 ]
 
 def get_unique_years(timeframes):
@@ -66,6 +68,13 @@ parser.add_argument(
     action='store_true',
     help='Autoexecute "preparedata" command after "cleanupdb" for the provided timeframes.'
 )
+# Add createdata option
+parser.add_argument(
+    '-c',
+    '--createdata',
+    action='store_true',
+    help='Autoexecute "createtraindata" command after "preparedata" for the provided timeframes.'
+)
 
 # Parse the entered arguments
 args = parser.parse_args()
@@ -89,6 +98,11 @@ if args.action == 'createdirtydb':
             if args.prepare:
                 # Call function to prepare the data with the unique years
                 prepare_main(get_unique_years(args.timeframe))
+
+                # Check if "createdata" option is set
+                if args.createdata:
+                    # Call the function to create the training dataset with unique years
+                    train_data_main(get_unique_years(args.timeframe))
 elif args.action == 'cleanupdb':
     if not args.timeframe:
         parser.error('-t is required when using "cleanupdb"')
@@ -103,6 +117,11 @@ elif args.action == 'cleanupdb':
         if args.prepare:
             # Call function to prepare data with the unique years
             prepare_main(get_unique_years(args.timeframe))
+
+            # Check if "createdata" option is set
+            if args.createdata:
+                # Call the function to create the training dataset with unique years
+                train_data_main(get_unique_years(args.timeframe))
 elif args.action == 'preparedata':
     if not args.timeframe:
         parser.error('-t is required when using "preparedata"')
@@ -112,3 +131,17 @@ elif args.action == 'preparedata':
 
         # Call the function with the unique years
         prepare_main(get_unique_years(args.timeframe))
+
+        # Check if "createdata" option is set
+        if args.createdata:
+            # Call the function to create the training dataset with unique years
+            train_data_main(get_unique_years(args.timeframe))
+elif args.action == 'createtraindata':
+    if not args.timeframe:
+        parser.error('-t is required when using "createtraindata"')
+    else:
+        # Check formatting of the timeframes provided
+        regexp_check(args.timeframe)
+
+        # Call the function with the unique years
+        train_data_main(get_unique_years(args.timeframe))

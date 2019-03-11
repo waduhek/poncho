@@ -1,0 +1,3 @@
+[submodule "nmt_chatbot"]
+	path = nmt_chatbot
+	url = https://github.com/waduhek/nmt-chatbot

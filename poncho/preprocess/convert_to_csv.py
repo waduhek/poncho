@@ -62,7 +62,7 @@ def main(unique_years):
             # Database connections
             try:
                 clean_conn = sqlite3.connect(
-                    'file:{}?mode=ro'.format(
+                    'file:{}?mode=rw'.format(
                         os.path.join(BASE_DIR, 'data', 'processed', 'RC_clean_{}.db'.format(year))
                     ),
                     uri=True
@@ -80,7 +80,7 @@ def main(unique_years):
             # Shuffle the data
             df = shuffle(df)
             # Write all the data to a CSV file
-            df.to_csv(os.path.join(BASE_DIR, 'data', 'prepared', 'prepared_{}.csv'.format(year), mode='a'))
+            df.to_csv(os.path.join(BASE_DIR, 'data', 'prepared', 'prepared_{}.csv'.format(year)), mode='a')
 
         log.write('Finishing up... Time: {}\n'.format(str(datetime.now())))
         log.write('===================================================================================\n\n')
