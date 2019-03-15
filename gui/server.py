@@ -10,8 +10,9 @@ class MainHandler(tornado.web.RequestHandler):
     def post(self):
         data=self.request.body
         print(data)
-        #print(self.request)
-        self.write("abc");
+        output=""
+        #call your function here and save it into output
+        self.write(output);
 
 def make_app():
     return tornado.web.Application([(r"/msg", MainHandler),(r"/", MainHandler2)],template_path = os.path.join(os.path.dirname(__file__),"templates"))
