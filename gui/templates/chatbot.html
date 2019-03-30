@@ -15,19 +15,23 @@
         <h1 class="">PONCHO CHATBOT</h1>
     </div>
     <img src="http://localhost:8000/static/images/poncho.png" width="200" height="200">
-    <div id="wrapper">
+    <div class="container" id="wrapper">
         <div id="menu">
             <p class="welcome">Welcome, <b></b></p>
             <p class="logout"><a id="exit" href="#">Exit Chat</a></p>
             <div style="clear:both"></div>
         </div>
         
-        <div id="chatbox"></div>
-        
-        <form name="message" action="">
-            <input name="usermsg" type="text" id="usermsg" size="63" />
-            <input name="submitmsg" type="button"  class="btn btn-primary" id="submitmsg" value="Send" />
-        </form>
+        <div class="container">
+            <div id="chatbox"></div>
+        </div>
+    
+        <div class="input-group mb-3 mx-auto">
+            <input class="form-control" name="usermsg" type="text" id="usermsg" onkeydown="javascript:return chatOnEnter(event);" />
+            <div class="input-group-append">
+                <button name="submitmsg" class="btn btn-primary" id="submitmsg">Send</button>
+            </div>
+        </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" ></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
