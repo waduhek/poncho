@@ -3,6 +3,8 @@ body {
     color: #222;
     text-align: center;
     padding: 35px;
+    width: 100%;
+
 }
   
 form, p, span {
@@ -23,7 +25,8 @@ a:hover { text-decoration: underline; }
     margin: 0 auto;
     padding-bottom: 25px;
     background: #EBF4FB;
-    width: 504px;
+    width: 800px;
+
     border:1px solid  #ACD8F0;
 }
   
@@ -37,10 +40,11 @@ a:hover { text-decoration: underline; }
     margin-bottom: 25px;
     padding: 10px;
     background: #fff;
-    height: 270px;
+    height: 350px;
     width:4 30px;
     border: 1px solid #ACD8F0;
     overflow: scroll;
+
 }
   
 #usermsg {
@@ -54,8 +58,10 @@ a:hover { text-decoration: underline; }
   
 #menu { padding: 12.5px 25px 12.5px 25px; }
   
-.welcome { float: left; }
+.welcome { text-align: center; }
   
 .logout { float: right; }
   
 .msgln { margin: 0 0 2px 0; }
+
+div#text { width: 0px; height: 2em; white-space: nowrap;  }
