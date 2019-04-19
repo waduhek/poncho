@@ -6,7 +6,7 @@ import tornado.web
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-#from nmt_chatbot.inference import inference
+from nmt_chatbot.inference import inference
 
 
 class MainHandler2(tornado.web.RequestHandler):
@@ -17,12 +17,8 @@ class MainHandler2(tornado.web.RequestHandler):
 class MainHandler(tornado.web.RequestHandler):
     def post(self):
         data = self.request.body
-        print(data)
-        print('recieved')
-        # print(data.decode('utf-8').split('=')[1])
-        output = "response"
         # Call your function here and save it into output
-        #output = inference(data.decode('utf-8').split('=')[1])['answers'][0]
+        output = inference(data.decode('utf-8').split('=')[1])['answers'][0]
         self.write(output)
 
 
