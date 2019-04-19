@@ -10,15 +10,16 @@
     <link rel="stylesheet" href="http://localhost:8000/static/style.css">
 </head>
 
-<body>
+<body background="http://localhost:8000/static/images/background.jpg" style="background-repeat: no-repeat;background-size: cover " >
     <div class="container">
-        <h1 class="">PONCHO CHATBOT</h1>
+        <h1 style="font-size: 40px;"><strong>PONCHO CHATBOT</strong></h1>
     </div>
     <img src="http://localhost:8000/static/images/poncho.png" width="200" height="200">
     <div class="container" id="wrapper">
         <div id="menu">
-            <p class="welcome">Welcome, <b></b></p>
-            <p class="logout"><a id="exit" href="#">Exit Chat</a></p>
+
+            <p class="welcome" style="font-size: 25px; font-weight: bold; ">Welcome, <b></b></p>
+            <br>
             <div style="clear:both"></div>
         </div>
         
@@ -27,7 +28,7 @@
         </div>
     
         <div class="input-group mb-3 mx-auto">
-            <input class="form-control" name="usermsg" type="text" id="usermsg" onkeydown="javascript:return chatOnEnter(event);" />
+            <input class="form-control" name="usermsg" type="text" id="usermsg" placeholder= "Enter your Text" onkeydown="javascript:return chatOnEnter(event);" />
             <div class="input-group-append">
                 <button name="submitmsg" class="btn btn-primary" id="submitmsg">Send</button>
             </div>
